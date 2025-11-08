@@ -3,10 +3,11 @@ using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CleanDownloads;
 
-public sealed class DownloadsWatcher : BackgroundService
+public sealed class DownloadsWatcher(ILogger<DownloadsWatcher> logger) : BackgroundService
 {
     private readonly ConcurrentDictionary<uint, Task> _pendingWatchings = new();
     private readonly ManagementEventWatcher _launchingWatcher = new(Wmi.Queries.ProcessLaunched);
@@ -18,6 +19,8 @@ public sealed class DownloadsWatcher : BackgroundService
         
         _launchingWatcher.Start();
         _terminationWatcher.Start();
+        
+        logger.LogInformation("Watcher for Downloads folder is started");
         
         return Task.CompletedTask;
     }
@@ -31,6 +34,8 @@ public sealed class DownloadsWatcher : BackgroundService
         
         _terminationWatcher.Stop();
         _terminationWatcher.Dispose();
+        
+        logger.LogInformation("Watcher for Downloads folder is stopped");
         
         return base.StopAsync(cancellationToken);
     }
@@ -58,6 +63,8 @@ public sealed class DownloadsWatcher : BackgroundService
             file.Remove();
             _pendingWatchings.TryRemove(file.ProcessId, out _);
             
+            logger.LogInformation("File {FilePath} already removed", file.FilePath);
+            
             return Task.CompletedTask;
         }
     }
@@ -66,8 +73,14 @@ public sealed class DownloadsWatcher : BackgroundService
     {
         var trackingProcess = TrackingProcess.From(eventArgs.NewEvent);
 
+        logger.LogInformation("An audit has been initiated for process {ProcessId}: {CommandLine}", trackingProcess.Id, trackingProcess.CommandLine);
+
         if (!trackingProcess.IsTriggeredFromDownloadsFolder())
+        {
+            logger.LogInformation("Process {ProcessId} skipped", trackingProcess.Id);
+            
             return;
+        }
 
         var trackingFile = default(TrackingFile?);
         
@@ -79,6 +92,8 @@ public sealed class DownloadsWatcher : BackgroundService
         {
             return;
         }
+        
+        logger.LogInformation("Prepare file {FilePath} which triggered process {ProcessId}", trackingFile.FilePath, trackingFile.ProcessId);
         
         var watchingTask = Task.Run(async () => await WaitProcessTerminationFor(trackingFile));
         _pendingWatchings.TryAdd(trackingProcess.Id, watchingTask);
