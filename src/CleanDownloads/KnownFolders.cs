@@ -1,5 +1,8 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
+using Microsoft.Win32.SafeHandles;
 
 namespace CleanDownloads;
 
@@ -14,25 +17,26 @@ public static class KnownFolders
         {
             get
             {
-                var searchResult = SHGetKnownFolderPath(DownloadsFolderVariable, dwFlags: 0, hToken: IntPtr.Zero, out var folderPath);
-            
-                if (searchResult is not 0) 
-                    Marshal.ThrowExceptionForHR(searchResult);
+                var searchResult = PInvoke.SHGetKnownFolderPath(
+                    DownloadsFolderVariable, 
+                    KNOWN_FOLDER_FLAG.KF_FLAG_DEFAULT, 
+                    hToken: new SafeAccessTokenHandle(HANDLE.Null),
+                    out var folderPath);
+
+                searchResult.ThrowOnFailure();
 
                 try
                 {
-                    return Marshal.PtrToStringUni(folderPath) 
-                        ?? throw new InvalidOperationException("Unable to determine Downloads folder path");
+                    return folderPath.ToString();
                 }
                 finally
                 {
-                    if (folderPath != IntPtr.Zero)
-                        Marshal.FreeCoTaskMem(folderPath);
+                    unsafe
+                    {
+                        PInvoke.CoTaskMemFree(folderPath);
+                    }
                 }
             }
         }
     }
-    
-    [DllImport("shell32.dll")]
-    private static extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid rfid, uint dwFlags, IntPtr hToken, out IntPtr ppszPath);
 }

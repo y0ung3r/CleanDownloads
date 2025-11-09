@@ -1,0 +1,4 @@
+﻿SHGetKnownFolderPath
+CoTaskMemFree
+CommandLineToArgvW
+LocalFree
