@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+// TODO[#4]: Add installer
+
 builder.Logging
     .ClearProviders()
     .AddConsole();
