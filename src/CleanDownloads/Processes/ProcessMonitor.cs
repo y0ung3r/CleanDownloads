@@ -30,14 +30,24 @@ public sealed class ProcessMonitor : IDisposable
 
     private static async Task<TrackingProcess?> WaitForNextProcessAsync(ManagementEventWatcher processWatcher, CancellationToken cancellationToken)
     {
+        var completionSource = new TaskCompletionSource<ManagementBaseObject>();
+        await using var registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
+
+        var eventHandler = new EventArrivedEventHandler((_, eventArgs) => completionSource.TrySetResult(eventArgs.NewEvent));
+
         try
         {
-            var nextProcess = await Task.Run(processWatcher.WaitForNextEvent, cancellationToken);
-            return TrackingProcess.From(nextProcess);
+            processWatcher.EventArrived += eventHandler;
+
+            return TrackingProcess.From(await completionSource.Task);
         }
         catch
         {
             return null;
+        }
+        finally
+        {
+            processWatcher.EventArrived -= eventHandler;
         }
     }
 

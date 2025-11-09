@@ -2,7 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 using Microsoft.VisualStudio.PlatformUI;
 
 namespace CleanDownloads.Processes;
@@ -71,35 +72,31 @@ public sealed record TrackingProcess
         return null;
     }
     
-    private static string[] SplitArgs(string? commandLine)
+    private static unsafe string[] SplitArgs(string? commandLine)
     {
         if (string.IsNullOrWhiteSpace(commandLine)) 
             return [];
-        
-        var pointer = CommandLineToArgvW(commandLine, out var argc);
-        
-        if (pointer == IntPtr.Zero) 
+
+        var pointer = PInvoke.CommandLineToArgv(commandLine, out var argc);
+
+        if (pointer is null || argc is 0)
             return [commandLine];
-        
+
         try
         {
+            var span = new ReadOnlySpan<PWSTR>(pointer, argc);
             var argv = new string[argc];
-            
-            for (var index = 0; index < argc; index++) 
-                argv[index] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(pointer, IntPtr.Size * index)) 
-                    ?? throw new InvalidOperationException("Unable to determine command line argument");
-            
+
+            for (var index = 0; index < argc; index++)
+                argv[index] = span[index].ToString();
+
             return argv;
         }
         finally
         {
-            LocalFree(pointer);
+            var local = new HLOCAL(pointer);
+            var handle = PInvoke.LocalFree_SafeHandle(local);
+            handle.Dispose();
         }
     }
-    
-    [DllImport("shell32.dll", SetLastError = true)]
-    private static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
-
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr LocalFree(IntPtr hMem);
 }
