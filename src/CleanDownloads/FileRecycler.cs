@@ -94,7 +94,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
                 continue;
             }
 
-            file.Remove(); // TODO: Delete permanently
+            file.Remove(); // TODO[#2]: Delete permanently
             
             FinishRecycle(file);
             

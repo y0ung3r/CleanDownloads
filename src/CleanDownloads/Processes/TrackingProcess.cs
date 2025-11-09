@@ -53,7 +53,7 @@ public sealed record TrackingProcess
         if (FilePath is null)
             return false;
         
-        return KnownFolders.Downloads.Path.IsPrefixOf(FilePath.Value); // TODO: Migrate to another solution?
+        return KnownFolders.Downloads.Path.IsPrefixOf(FilePath.Value);
     }
 
     private static AbsolutePath? ExtractFilePath(string[] arguments)
