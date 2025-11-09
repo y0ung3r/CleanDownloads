@@ -3,6 +3,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Microsoft.Win32.SafeHandles;
+using TruePath;
 
 namespace CleanDownloads;
 
@@ -13,7 +14,7 @@ public static class KnownFolders
         private static readonly Guid DownloadsFolderVariable
             = new("374DE290-123F-4565-9164-39C4925E467B");
         
-        public static string Path
+        public static AbsolutePath Path
         {
             get
             {
@@ -27,7 +28,7 @@ public static class KnownFolders
 
                 try
                 {
-                    return folderPath.ToString();
+                    return new AbsolutePath(folderPath.ToString());
                 }
                 finally
                 {

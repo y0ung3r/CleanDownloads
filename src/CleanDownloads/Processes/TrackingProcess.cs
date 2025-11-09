@@ -4,7 +4,7 @@ using System.Linq;
 using System.Management;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Microsoft.VisualStudio.PlatformUI;
+using TruePath;
 
 namespace CleanDownloads.Processes;
 
@@ -26,7 +26,7 @@ public sealed record TrackingProcess
     
     public string? CommandLine { get; }
     
-    private string? FilePath { get; }
+    private AbsolutePath? FilePath { get; }
 
     private TrackingProcess(uint id, string? name, string? commandLine)
     {
@@ -40,23 +40,23 @@ public sealed record TrackingProcess
     {
         trackingFile = null!;
         
-        if (string.IsNullOrWhiteSpace(FilePath))
+        if (FilePath is null)
             return false;
         
-        trackingFile = new TrackingFile(Id, FilePath);
+        trackingFile = new TrackingFile(Id, FilePath.Value);
         
         return true;
     }
 
     public bool IsTriggeredFromDownloadsFolder()
     {
-        if (string.IsNullOrWhiteSpace(FilePath))
+        if (FilePath is null)
             return false;
         
-        return PathUtil.IsDescendant(KnownFolders.Downloads.Path, FilePath); // TODO: Migrate to another solution?
+        return KnownFolders.Downloads.Path.IsPrefixOf(FilePath.Value); // TODO: Migrate to another solution?
     }
 
-    private static string? ExtractFilePath(string[] arguments)
+    private static AbsolutePath? ExtractFilePath(string[] arguments)
     {
         if (arguments.Length is 0) 
             return null;
@@ -66,7 +66,7 @@ public sealed record TrackingProcess
             var extension = Path.GetExtension(argument);
             
             if (!string.IsNullOrWhiteSpace(extension) && File.Exists(argument))
-                return argument;
+                return new AbsolutePath(argument);
         }
         
         return null;

@@ -16,9 +16,9 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.242"/> 
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10"/>
-        <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="17.14.40264" />
         <PackageReference Include="System.Management" Version="9.0.10" />
         <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+        <PackageReference Include="TruePath" Version="1.10.0" />
     </ItemGroup>
     
 </Project>
