@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CleanDownloads.Extensions;
 using CleanDownloads.Processes;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -82,7 +82,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var terminatedProcess = _missingProcesses.GetValueOrDefault(file.ProcessId, await processMonitor.WaitForNextTerminatingProcessAsync(cancellationToken));
+            var terminatedProcess = await _missingProcesses.GetValueOrWaitDefaultAsync(file.ProcessId, () => processMonitor.WaitForNextTerminatingProcessAsync(cancellationToken));
 
             if (terminatedProcess is null)
                 continue;
