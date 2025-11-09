@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Configuration;
-using Microsoft.Extensions.Logging.EventLog;
 using CleanDownloads;
+using CleanDownloads.Processes;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -20,10 +21,9 @@ builder.Logging
     });
 
 builder.Services
-    .AddHostedService<DownloadsWatcher>()
+    .AddSingleton<ProcessMonitor>()
+    .AddHostedService<WindowsService>()
     .AddWindowsService(options => options.ServiceName = "Clean Downloads");
-
-LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(builder.Services);
 
 var host = builder.Build();
 
