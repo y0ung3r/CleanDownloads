@@ -5,8 +5,11 @@ namespace CleanDownloads;
 public sealed record TrackingFile(uint ProcessId, string FilePath)
 {
     public void Remove() 
-        => FileSystem.DeleteFile(FilePath, UIOption.OnlyErrorDialogs,  RecycleOption.SendToRecycleBin);
+        => Recycle(RecycleOption.SendToRecycleBin); // TODO: Deletion from LocalSystem profile always permanently 
     
     public void Delete()
-        => FileSystem.DeleteFile(FilePath, UIOption.OnlyErrorDialogs, RecycleOption.DeletePermanently);
+        => Recycle(RecycleOption.DeletePermanently);
+    
+    private void Recycle(RecycleOption recycleOptions) 
+        => FileSystem.DeleteFile(FilePath, UIOption.OnlyErrorDialogs, recycleOptions);
 }
