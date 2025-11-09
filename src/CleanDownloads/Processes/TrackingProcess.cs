@@ -3,44 +3,57 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.PlatformUI;
 
-namespace CleanDownloads;
+namespace CleanDownloads.Processes;
 
 public sealed record TrackingProcess
 {
     public static TrackingProcess From(ManagementBaseObject process)
     {
-        var instance = (ManagementBaseObject)process[Wmi.Processes.TargetInstance];
-        var processId = Convert.ToUInt32(instance.Properties[Wmi.Processes.ProcessId].Value);
-        var commandLine = Convert.ToString(instance.Properties[Wmi.Processes.CommandLine].Value);
-        // TODO: Consider to use var executablePath = Convert.ToString(processInstance.Properties["ExecutablePath"].Value);
+        var instance = (ManagementBaseObject)process[WindowsManagementInstrumentation.Processes.TargetInstance];
+        var processId = Convert.ToUInt32(instance.Properties[WindowsManagementInstrumentation.Processes.ProcessId].Value);
+        var processName = Convert.ToString(instance.Properties[WindowsManagementInstrumentation.Processes.ProcessName].Value);
+        var commandLine = Convert.ToString(instance.Properties[WindowsManagementInstrumentation.Processes.CommandLine].Value);
 
-        return new TrackingProcess(processId, commandLine);
+        return new TrackingProcess(processId, processName, commandLine);
     }
 
     public uint Id { get; }
+    
+    public string? Name { get; }
     
     public string? CommandLine { get; }
     
     private string? FilePath { get; }
 
-    private TrackingProcess(uint id, string? commandLine)
+    private TrackingProcess(uint id, string? name, string? commandLine)
     {
         Id = id;
+        Name = name;
         CommandLine = commandLine;
         FilePath = ExtractFilePath(SplitArgs(CommandLine));
     }
 
-    public TrackingFile TrackFile()
+    public bool TryTrackFile(out TrackingFile trackingFile)
     {
-        if (string.IsNullOrWhiteSpace(FilePath))
-            throw new InvalidOperationException("Unable to determine file path");
+        trackingFile = null!;
         
-        return new TrackingFile(Id, FilePath);
+        if (string.IsNullOrWhiteSpace(FilePath))
+            return false;
+        
+        trackingFile = new TrackingFile(Id, FilePath);
+        
+        return true;
     }
 
     public bool IsTriggeredFromDownloadsFolder()
-        => FilePath?.Contains(KnownFolders.Downloads, StringComparison.OrdinalIgnoreCase) is true;
+    {
+        if (string.IsNullOrWhiteSpace(FilePath))
+            return false;
+        
+        return PathUtil.IsDescendant(KnownFolders.Downloads.Path, FilePath); // TODO: Migrate to another solution?
+    }
 
     private static string? ExtractFilePath(string[] arguments)
     {
