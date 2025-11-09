@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net9.0-windows</TargetFramework>
@@ -15,7 +15,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.10"/>
         <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="17.14.40264" />
         <PackageReference Include="System.Management" Version="9.0.10" />
         <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
