@@ -6,20 +6,21 @@ using Microsoft.Extensions.Logging;
 
 namespace CleanDownloads.Processes;
 
-public sealed class ProcessMonitor : IDisposable
+public sealed class ProcessMonitor(ILogger<ProcessMonitor> logger) : IDisposable
 {
-    private readonly ILogger<ProcessMonitor> _logger;
     private readonly ManagementEventWatcher _launchingWatcher = new(WindowsManagementInstrumentation.Processes.SelectLaunched);
     private readonly ManagementEventWatcher _terminatingWatcher = new(WindowsManagementInstrumentation.Processes.SelectTerminated);
 
-    public ProcessMonitor(ILogger<ProcessMonitor> logger)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger = logger;
+        cancellationToken.ThrowIfCancellationRequested();
         
         _terminatingWatcher.Start();
         _launchingWatcher.Start();
         
-        _logger.LogInformation("[CleanDownloads]: Process monitor has been started");
+        logger.LogInformation("Process monitor has been started");
+        
+        return Task.CompletedTask;
     }
 
     public Task<TrackingProcess?> WaitForNextLaunchingProcessAsync(CancellationToken cancellationToken)
@@ -59,6 +60,6 @@ public sealed class ProcessMonitor : IDisposable
         _terminatingWatcher.Stop();
         _terminatingWatcher.Dispose();
         
-        _logger.LogInformation("[CleanDownloads]: Process monitor has been stopped");
+        logger.LogInformation("Process monitor has been stopped");
     }
 }
