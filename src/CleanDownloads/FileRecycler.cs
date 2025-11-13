@@ -16,7 +16,9 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("[CleanDownloads]: Background service has been started");
+        await processMonitor.StartAsync(stoppingToken);
+        
+        logger.LogInformation("File recycler has been started");
         
         try
         {
@@ -28,14 +30,14 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
                     continue;
                 
                 logger.LogInformation(
-                    "[CleanDownloads]: Received process {ProcessName} ({ProcessId}), which may need to be tracked", 
+                    "Received process {ProcessName} ({ProcessId}), which may need to be tracked", 
                     trackingProcess.Name, 
                     trackingProcess.Id);
 
                 if (!trackingProcess.IsTriggeredFromDownloadsFolder())
                 {
                     logger.LogInformation(
-                        "[CleanDownloads]: The process {ProcessName} ({ProcessId}) was not launched from the Downloads folder, so tracking will not be performed", 
+                        "The process {ProcessName} ({ProcessId}) was not launched from the Downloads folder, so tracking will not be performed", 
                         trackingProcess.Name, 
                         trackingProcess.Id);
                     
@@ -45,7 +47,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
                 if (!trackingProcess.TryTrackFile(out var trackingFile))
                 {
                     logger.LogWarning(
-                        "[CleanDownloads]: The process {ProcessName} ({ProcessId}) cannot be tracked because the file path could not be obtained", 
+                        "The process {ProcessName} ({ProcessId}) cannot be tracked because the file path could not be obtained", 
                         trackingProcess.Name, 
                         trackingProcess.Id);
                     
@@ -54,7 +56,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
 
                 ScheduleRecycleFor(trackingProcess, trackingFile, stoppingToken);
                 
-                logger.LogInformation("[CleanDownloads]: The file \"{FilePath}\" is scheduled for deletion", trackingFile.FilePath);
+                logger.LogInformation("The file \"{FilePath}\" is scheduled for deletion", trackingFile.FilePath);
             }
         }
         catch (OperationCanceledException)
@@ -63,19 +65,19 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "[CleanDownloads]: An unexpected error has occurred");
+            logger.LogError(exception, "An unexpected error has occurred");
         }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("[CleanDownloads]: Background service is stopping");
+        logger.LogInformation("File recycler is stopping");
         
         await Task.WhenAll(_pendingRecycles.Values);
         
         await base.StopAsync(cancellationToken);
         
-        logger.LogInformation("[CleanDownloads]: Background service has been stopped");
+        logger.LogInformation("File recycler has been stopped");
     }
     
     private async Task RecycleForAsync(TrackingFile file, CancellationToken cancellationToken)
@@ -98,7 +100,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
             
             FinishRecycle(file);
             
-            logger.LogInformation("[CleanDownloads]: The file {FileName} has been successfully deleted", file.FilePath);
+            logger.LogInformation("The file {FileName} has been successfully deleted", file.FilePath);
         }
     }
     
@@ -112,7 +114,7 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
             }
             catch (Exception exception)
             {
-                logger.LogWarning(exception, "[CleanDownloads]: Unable to recycle file {FileName}", file.FilePath);
+                logger.LogWarning(exception, "Unable to recycle file {FileName}", file.FilePath);
                 
                 FinishRecycle(file);
             }
