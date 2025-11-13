@@ -1,21 +1,24 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using CleanDownloads;
-using CleanDownloads.Processes;
+using CleanDownloads.Extensions;
+using Installer.Extensions;
 using Microsoft.Extensions.Logging;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// TODO[#4]: Add installer
-
 builder.Logging
     .ClearProviders()
+    .SetMinimumLevel(LogLevel.Information)
+    .AddFilter("Microsoft", LogLevel.Warning)
+    .AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning)
     .AddConsole();
 
 builder.Services
-    .AddSingleton<ProcessMonitor>()
-    .AddHostedService<FileRecycler>();
+    .AddProcessMonitor()
+    .AddFileRecycler()
+    .AddInstaller();
 
 var host = builder.Build();
+
+host.UseInstaller();
 
 await host.RunAsync();
