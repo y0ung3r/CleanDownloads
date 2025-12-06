@@ -1,13 +1,27 @@
 <Project>
 
-    <ItemGroup>
+    <ItemGroup Label="Avalonia">
+        <PackageVersion Include="Avalonia" Version="11.3.8"/>
+        <PackageVersion Include="Avalonia.Desktop" Version="11.3.8"/>
+        <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.8"/>
+        <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.8"/>
+        <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.8"/>
+    </ItemGroup>
+    
+    <ItemGroup Label="Windows API">
         <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.242"/>
+        <PackageVersion Include="System.Runtime.InteropServices" Version="4.3.0"/>
+        <PackageVersion Include="System.Management" Version="9.0.10"/>
+    </ItemGroup>
+    
+    <ItemGroup Label="Extensions">
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.10"/>
         <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10"/>
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10"/>
         <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.10"/>
-        <PackageVersion Include="System.Management" Version="9.0.10"/>
-        <PackageVersion Include="System.Runtime.InteropServices" Version="4.3.0"/>
+    </ItemGroup>
+    
+    <ItemGroup Label="File system">
         <PackageVersion Include="TruePath" Version="1.10.0"/>
         <PackageVersion Include="TruePath.SystemIo" Version="1.10.0"/>
     </ItemGroup>
