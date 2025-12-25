@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -11,19 +12,27 @@ using Installer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx.Interop;
 using Serilog;
 using Serilog.Events;
 
 namespace CleanDownloads;
 
-public static class Program
+public sealed class Program
 {
+    private static ILogger<Program>? _logger;
     private static IHost? _globalHost;
 
     public static IHost GlobalHost
     {
         get => _globalHost ?? throw new InvalidOperationException("Global host is unavailable");
         private set => _globalHost = value;
+    }
+
+    private static ILogger<Program> Logger
+    {
+        get => _logger ?? throw new InvalidOperationException("Logger is unavailable");
+        set => _logger = value;
     }
     
     [STAThread]
@@ -34,12 +43,28 @@ public static class Program
         GlobalHost = hostBuilder.Build();
         
         GlobalHost.UseInstaller();
+
+        Logger = GlobalHost
+            .Services
+            .GetRequiredService<ILogger<Program>>();
+        
+        using var handle = new EventWaitHandle(initialState: false, EventResetMode.AutoReset, nameof(CleanDownloads), out var isAcquired);
+
+        if (!isAcquired)
+        {
+            Logger.LogInformation("Found already running process. Sending awakening signal...");
+            
+            handle.Set();
+            
+            Environment.Exit(exitCode: 0);
+        }
         
         var hostLifetime = GlobalHost.Services.GetRequiredService<IHostApplicationLifetime>();
         
         hostLifetime.ApplicationStarted.Register(() =>
         {
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
         });
         
         hostLifetime.ApplicationStopping.Register(() =>
@@ -47,8 +72,14 @@ public static class Program
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
                 Dispatcher.UIThread.InvokeShutdown();
         });
+        
+#if DEBUG
+        Logger.LogInformation("Host started immediately, because we are in DEBUG mode");
 
         await GlobalHost.RunAsync();
+#else
+        WaitAwakeningSignal(handle);
+#endif
     }
 
     private static AppBuilder BuildAvaloniaApp()
@@ -91,4 +122,38 @@ public static class Program
 
         return builder;
     }
+    
+    private static void WaitAwakeningSignal(EventWaitHandle handle)
+    {
+        Logger.LogInformation("Waiting for awakening signal to initialize Avalonia");
+        
+        handle.WaitOne();
+        
+        Task.Run(async () =>
+        {
+            await GlobalHost.RunAsync();
+            
+            while (true)
+            {
+                await WaitHandleAsyncFactory.FromWaitHandle(handle);
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifetime) 
+                        return;
+                    
+                    Logger.LogInformation("Awakening signal is received. Trying to show existing window");
+                    
+                    lifetime
+                        .MainWindow?
+                        .Show();
+                });
+            }
+            
+            // ReSharper disable once FunctionNeverReturns
+        });
+    }
+    
+    private Program() 
+    { }
 }

@@ -3,7 +3,6 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -29,6 +28,7 @@
         <PackageReference Include="Serilog.Sinks.File"/>
         <PackageReference Include="TruePath"/>
         <PackageReference Include="Tomlyn"/>
+        <PackageReference Include="Nito.AsyncEx"/>
     </ItemGroup>
     
     <ItemGroup>
