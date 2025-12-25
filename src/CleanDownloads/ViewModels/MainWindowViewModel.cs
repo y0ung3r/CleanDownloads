@@ -1,5 +1,8 @@
-﻿using System.Reactive;
+﻿using System;
+using System.Reactive;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualBasic.FileIO;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -8,7 +11,8 @@ namespace CleanDownloads.ViewModels;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
-    private CleaningSettings CurrentSettings { get; }
+    private readonly ILogger<MainWindowViewModel> _logger;
+    private readonly CleaningSettings _currentSettings;
     
     [Reactive]
     public partial bool IsDeletePermanently { get; set; }
@@ -21,26 +25,40 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ApplyCommand { get; }
 
     public MainWindowViewModel()
-        : this(new CleaningSettings())
+        : this(new NullLogger<MainWindowViewModel>(), new CleaningSettings())
     { }
 
-    public MainWindowViewModel(CleaningSettings settings)
+    public MainWindowViewModel(
+        ILogger<MainWindowViewModel> logger, 
+        CleaningSettings currentSettings)
     {
-        CurrentSettings = settings;
-        IsDeletePermanently = settings.DeleteMode is RecycleOption.DeletePermanently;
-        IsSendToRecycleBin = settings.DeleteMode is RecycleOption.SendToRecycleBin;
+        _logger = logger;
+        _currentSettings = currentSettings;
+        
+        IsDeletePermanently = currentSettings.DeleteMode is RecycleOption.DeletePermanently;
+        IsSendToRecycleBin = currentSettings.DeleteMode is RecycleOption.SendToRecycleBin;
+        
         CloseCommand = ReactiveCommand.Create(() => { });
         ApplyCommand = ReactiveCommand.CreateFromTask(ApplyAsync);
     }
 
     private async Task ApplyAsync()
     {
-        CurrentSettings.DeleteMode = this switch
+        _currentSettings.DeleteMode = this switch
         {
             _ when IsDeletePermanently => RecycleOption.DeletePermanently,
             _ => RecycleOption.SendToRecycleBin
         };
 
-        await CurrentSettings.SaveAsync();
+        try
+        {
+            await _currentSettings.SaveAsync();
+
+            _logger.LogInformation("Settings applied successfully. New delete mode is {DeleteMode} now", _currentSettings.DeleteMode);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Failed to save settings");
+        }
     }
 }

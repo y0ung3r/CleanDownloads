@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -10,6 +11,8 @@ using Installer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 
 namespace CleanDownloads;
 
@@ -63,12 +66,21 @@ public static class Program
         var logging = builder.Logging;
         var services = builder.Services;
 
+        var logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override(source: "Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override(source: "Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
+            .Enrich.WithProperty(name: "SessionId", value: Guid.NewGuid().ToString("N")[..8])
+            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SessionId}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.File(
+                path: Path.Combine(AppContext.BaseDirectory, "CleanDownloads.log"), 
+                shared: true, 
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SessionId}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+        
         logging
             .ClearProviders()
-            .SetMinimumLevel(LogLevel.Information)
-            .AddFilter("Microsoft", LogLevel.Warning)
-            .AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning)
-            .AddConsole();
+            .AddSerilog(logger, dispose: true);
 
         services
             .AddProcessMonitor()
