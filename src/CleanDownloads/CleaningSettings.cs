@@ -11,13 +11,11 @@ public sealed class CleaningSettings
 {
     public static readonly AbsolutePath DefaultPath 
         = new(Path.Combine(AppContext.BaseDirectory, "settings.toml"));
-    
-    private string? _currentPath;
 
     private string CurrentPath
     {
-        get => _currentPath ?? throw new InvalidOperationException("Failed to retrieve path to cleaning settings");
-        set => _currentPath = value;
+        get => field ?? throw new InvalidOperationException("Failed to retrieve path to cleaning settings");
+        set;
     }
 
     public static async Task<CleaningSettings> LoadAsync(AbsolutePath settingsPath)

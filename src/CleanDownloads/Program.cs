@@ -18,23 +18,20 @@ using Serilog.Events;
 
 namespace CleanDownloads;
 
-public sealed class Program
+public static class Program
 {
-    private static ILogger<Program>? _logger;
-    private static IHost? _globalHost;
-
     public static IHost GlobalHost
     {
-        get => _globalHost ?? throw new InvalidOperationException("Global host is unavailable");
-        private set => _globalHost = value;
+        get => field ?? throw new InvalidOperationException("Global host is unavailable");
+        private set;
     }
 
-    private static ILogger<Program> Logger
+    private static ILogger<IEntryPoint> Logger
     {
-        get => _logger ?? throw new InvalidOperationException("Logger is unavailable");
-        set => _logger = value;
+        get => field ?? throw new InvalidOperationException("Logger is unavailable");
+        set;
     }
-    
+
     [STAThread]
     public static async Task Main(string[] args)
     {
@@ -42,13 +39,14 @@ public sealed class Program
         
         GlobalHost = hostBuilder.Build();
         
-        GlobalHost.UseInstaller();
-
         Logger = GlobalHost
             .Services
-            .GetRequiredService<ILogger<Program>>();
+            .GetRequiredService<ILogger<IEntryPoint>>();
         
-        using var handle = new EventWaitHandle(initialState: false, EventResetMode.AutoReset, nameof(CleanDownloads), out var isAcquired);
+        GlobalHost.UseInstaller();
+
+#if !DEBUG
+        using var handle = new EventWaitHandle(initialState: true, EventResetMode.AutoReset, nameof(CleanDownloads), out var isAcquired);
 
         if (!isAcquired)
         {
@@ -58,6 +56,9 @@ public sealed class Program
             
             Environment.Exit(exitCode: 0);
         }
+#else
+        Logger.LogInformation("Host must be started immediately, because we are in DEBUG mode");
+#endif
         
         var hostLifetime = GlobalHost.Services.GetRequiredService<IHostApplicationLifetime>();
         
@@ -73,12 +74,14 @@ public sealed class Program
                 Dispatcher.UIThread.InvokeShutdown();
         });
         
-#if DEBUG
-        Logger.LogInformation("Host started immediately, because we are in DEBUG mode");
-
-        await GlobalHost.RunAsync();
-#else
+#if !DEBUG
         WaitAwakeningSignal(handle);
+#endif
+        
+        await GlobalHost.RunAsync();
+
+#if !DEBUG
+        handle.Reset();
 #endif
     }
 
@@ -125,35 +128,31 @@ public sealed class Program
     
     private static void WaitAwakeningSignal(EventWaitHandle handle)
     {
-        Logger.LogInformation("Waiting for awakening signal to initialize Avalonia");
-        
         handle.WaitOne();
         
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
-            await GlobalHost.RunAsync();
-            
             while (true)
             {
+                Logger.LogInformation("Waiting for awakening signal to show existing window...");
+                
                 await WaitHandleAsyncFactory.FromWaitHandle(handle);
-
+                
+                Logger.LogInformation("Awakening signal is received. Trying to show existing window...");
+                
                 Dispatcher.UIThread.Post(() =>
                 {
-                    if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifetime) 
-                        return;
+                    var lifetime = (IClassicDesktopStyleApplicationLifetime?)Application.Current?.ApplicationLifetime;
                     
-                    Logger.LogInformation("Awakening signal is received. Trying to show existing window");
-                    
-                    lifetime
+                    lifetime?
                         .MainWindow?
                         .Show();
                 });
+                
+                Logger.LogInformation("Window showing is already scheduled");
             }
             
             // ReSharper disable once FunctionNeverReturns
         });
     }
-    
-    private Program() 
-    { }
 }
