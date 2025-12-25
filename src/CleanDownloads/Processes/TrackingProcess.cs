@@ -8,7 +8,7 @@ using TruePath;
 
 namespace CleanDownloads.Processes;
 
-public sealed record TrackingProcess
+public sealed class TrackingProcess
 {
     public static TrackingProcess From(ManagementBaseObject process)
     {

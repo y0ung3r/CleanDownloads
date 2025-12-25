@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using TruePath;
 using TruePath.SystemIo;
@@ -36,9 +35,6 @@ public sealed class ConsoleInstaller(ILogger<ConsoleInstaller> logger)
             return;
         
         KillRunningApplicationInstances(installationPath);
-        
-        Thread.Sleep(millisecondsTimeout: 100);
-        
         InstallExecutable(installerPath, installationPath);
         CreateStartMenuShortcut(installationPath);
         CreateScheduledTask(installationPath);
@@ -46,7 +42,7 @@ public sealed class ConsoleInstaller(ILogger<ConsoleInstaller> logger)
         
         logger.LogInformation("Installation of {ApplicationName} completed successfully", UserFriendlyApplicationName);
         
-        Thread.Sleep(millisecondsTimeout: 500);
+        Environment.Exit(exitCode: 0);
     }
 
     private static void OpenApplication(AbsolutePath installationPath) 
