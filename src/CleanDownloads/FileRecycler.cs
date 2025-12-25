@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CleanDownloads;
 
-public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor processMonitor) : BackgroundService
+public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor processMonitor, CleaningSettings cleaningSettings) : BackgroundService
 {
     private readonly ConcurrentDictionary<uint, TrackingProcess?> _missingProcesses = new();
     private readonly ConcurrentDictionary<uint, Task> _pendingRecycles = new();
@@ -96,11 +96,11 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
                 continue;
             }
 
-            file.Remove(); // TODO[#2]: Delete permanently
+            file.Recycle(cleaningSettings.DeleteMode);
             
             FinishRecycle(file);
             
-            logger.LogInformation("The file {FileName} has been successfully deleted", file.FilePath);
+            logger.LogInformation("The file {FileName} has been recycled using {DeleteMode} mode successfully", file.FilePath, cleaningSettings.DeleteMode);
         }
     }
     

@@ -2,8 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 using CleanDownloads.Extensions;
+using CleanDownloads.ViewModels;
 using Installer.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +26,9 @@ public static class Program
     [STAThread]
     public static async Task Main(string[] args)
     {
-        GlobalHost = CreateHostBuilder(args).Build();
+        var hostBuilder = await CreateHostBuilder(args);
+        
+        GlobalHost = hostBuilder.Build();
         
         GlobalHost.UseInstaller();
         
@@ -49,23 +53,29 @@ public static class Program
             .Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToTrace()
+            .UseReactiveUI();
 
-    private static HostApplicationBuilder CreateHostBuilder(string[] args)
+    private static async Task<HostApplicationBuilder> CreateHostBuilder(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
 
-        builder.Logging
+        var logging = builder.Logging;
+        var services = builder.Services;
+
+        logging
             .ClearProviders()
             .SetMinimumLevel(LogLevel.Information)
             .AddFilter("Microsoft", LogLevel.Warning)
             .AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning)
             .AddConsole();
 
-        builder.Services
+        services
             .AddProcessMonitor()
             .AddFileRecycler()
-            .AddInstaller();
+            .AddInstaller()
+            .AddTransient<MainWindowViewModel>()
+            .AddSingleton(await CleaningSettings.LoadAsync(CleaningSettings.DefaultPath));
 
         return builder;
     }
