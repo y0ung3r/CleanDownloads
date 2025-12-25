@@ -43,4 +43,8 @@
         <PackageVersion Include="Tomlyn" Version="0.19.0"/>
     </ItemGroup>
     
+    <ItemGroup Label="Misc">
+        <PackageVersion Include="Nito.AsyncEx" Version="5.1.2"/>
+    </ItemGroup>
+    
 </Project>
