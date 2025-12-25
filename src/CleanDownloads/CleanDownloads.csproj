@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>exe</OutputType>
+        <OutputType>WinExe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -10,21 +11,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Avalonia.ReactiveUI"/>
+        <PackageReference Include="ReactiveUI.SourceGenerators"/>
+        <PackageReference Include="Avalonia.Xaml.Behaviors"/>
         <PackageReference Include="Avalonia"/>
         <PackageReference Include="Avalonia.Desktop"/>
         <PackageReference Include="Avalonia.Themes.Fluent"/>
         <PackageReference Include="Avalonia.Fonts.Inter"/>
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
-        
+        <PackageReference Include="Avalonia.Diagnostics"/>
         <PackageReference Include="Microsoft.Windows.CsWin32"/> 
         <PackageReference Include="Microsoft.Extensions.Hosting"/>
         <PackageReference Include="System.Management"/>
         <PackageReference Include="System.Runtime.InteropServices"/>
         <PackageReference Include="TruePath"/>
+        <PackageReference Include="Tomlyn"/>
     </ItemGroup>
     
     <ItemGroup>
@@ -36,7 +36,6 @@
         <DependentUpon>MainWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Remove="HostLifetime.cs" />
     </ItemGroup>
     
 </Project>

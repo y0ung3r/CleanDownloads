@@ -1,3 +1,5 @@
-﻿namespace CleanDownloads.ViewModels;
+﻿using ReactiveUI;
 
-public abstract class ViewModelBase;
+namespace CleanDownloads.ViewModels;
+
+public abstract class ViewModelBase : ReactiveObject;

@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using CleanDownloads.Windows;
+using CleanDownloads.ViewModels;
+using CleanDownloads.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CleanDownloads;
 
@@ -16,7 +18,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = Program.GlobalHost.Services.GetRequiredService<MainWindowViewModel>()
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

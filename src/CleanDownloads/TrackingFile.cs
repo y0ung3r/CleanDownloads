@@ -5,12 +5,9 @@ namespace CleanDownloads;
 
 public sealed record TrackingFile(uint ProcessId, AbsolutePath FilePath)
 {
-    public void Remove() 
-        => Recycle(RecycleOption.SendToRecycleBin);
-    
-    public void Delete()
-        => Recycle(RecycleOption.DeletePermanently);
-    
-    private void Recycle(RecycleOption recycleOptions) 
-        => FileSystem.DeleteFile(FilePath.ToString(), UIOption.OnlyErrorDialogs, recycleOptions);
+    public void Recycle(RecycleOption recycleOptions)
+    {
+        var filePath = FilePath.ToString();
+        FileSystem.DeleteFile(filePath, UIOption.OnlyErrorDialogs, recycleOptions);
+    }
 }

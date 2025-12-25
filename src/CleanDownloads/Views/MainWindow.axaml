@@ -1,0 +1,198 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="using:CleanDownloads.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="CleanDownloads.Views.MainWindow"
+        x:DataType="viewModels:MainWindowViewModel"
+        SizeToContent="WidthAndHeight" CanResize="False"
+        SystemDecorations="None" WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        FontFamily="Consolas">
+
+    <Design.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Border Background="White" 
+            BorderBrush="Transparent" 
+            BorderThickness="1" 
+            Margin="5"
+            CornerRadius="10">
+        
+        <StackPanel Orientation="Vertical"
+                    Margin="15">
+            
+            <Grid ColumnDefinitions="* Auto">
+                
+                <TextBlock Grid.Column="0"
+                           VerticalAlignment="Center"
+                           TextAlignment="Left"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           Foreground="Black"
+                           Text="> Clean_Downloads"
+                           Margin="0,0,0,10"/>
+                
+                <Button Grid.Column="1"
+                        Command="{Binding CloseCommand}"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        CornerRadius="25">
+
+                    <Canvas Width="12" 
+                            Height="12">
+                        
+                        <Path Data="M0,0 L12,12 M0,12 L12,0"
+                              Stroke="#707070"
+                              StrokeThickness="1.5"/>
+                        
+                    </Canvas>
+
+                    <Button.Styles>
+                        
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#ECEDEE"/>
+                        </Style>
+                        
+                        <Style Selector="Button:pressed">
+                            <Setter Property="Background" Value="#BEBFC1"/>
+                        </Style>
+                        
+                        <Style Selector="Button:pointerover Path">
+                            <Setter Property="Stroke" Value="#000000"/>
+                        </Style>
+                        
+                        <Style Selector="Button:pressed Path">
+                            <Setter Property="Stroke" Value="#FFFFFF"/>
+                        </Style>
+                        
+                    </Button.Styles>
+                    
+                </Button>
+                
+            </Grid>
+            
+            <Grid RowDefinitions="Auto, Auto, Auto" 
+                  ColumnDefinitions="*"
+                  Margin="0,5">
+            
+                <TextBlock Grid.Row="0" 
+                           Grid.Column="0"
+                           Margin="0,0,0,15" 
+                           TextAlignment="Left"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="Black"
+                           Text="Delete mode" />
+
+                <StackPanel Grid.Row="1"
+                            Grid.Column="0"
+                            Orientation="Vertical"
+                            Spacing="12">
+                    
+                    <Border Background="#f8f9fa" 
+                            BorderBrush="#e9ecef" 
+                            BorderThickness="1" 
+                            CornerRadius="12" 
+                            Padding="12">
+                        
+                        <StackPanel Orientation="Horizontal" 
+                                    Spacing="10" 
+                                    VerticalAlignment="Center">
+                            
+                            <RadioButton GroupName="DeleteMode"
+                                         Margin="0,0,5,0"
+                                         IsChecked="{Binding IsDeletePermanently}"
+                                         VerticalAlignment="Top"
+                                         BorderThickness="1">
+                            
+                                <StackPanel Orientation="Vertical" 
+                                            Spacing="4">
+                                    
+                                    <TextBlock Text="Permanent delete" 
+                                               FontWeight="SemiBold" 
+                                               FontSize="14"
+                                               Foreground="#212529"/>
+                                    
+                                    <TextBlock Text="File will be deleted directly without going to the Recycle Bin" 
+                                               FontSize="12"
+                                               Foreground="#6c757d"
+                                               TextWrapping="Wrap" />
+                                    
+                                </StackPanel>
+                                
+                            </RadioButton>
+                            
+                        </StackPanel>
+                        
+                    </Border>
+
+                    <Border Background="#f8f9fa" 
+                            BorderBrush="#e9ecef" 
+                            BorderThickness="1" 
+                            CornerRadius="12" 
+                            Padding="12">
+                        
+                        <StackPanel Orientation="Horizontal" 
+                                    Spacing="10" 
+                                    VerticalAlignment="Center">
+                            
+                            <RadioButton GroupName="DeleteMode"
+                                         Margin="0,0,5,0"
+                                         IsChecked="{Binding IsSendToRecycleBin}"
+                                         VerticalAlignment="Top"
+                                         BorderThickness="1">
+                            
+                                <StackPanel Orientation="Vertical" Spacing="4">
+                                    
+                                    <TextBlock Text="Delete via Recycle Bin" 
+                                               FontWeight="SemiBold" 
+                                               FontSize="14"
+                                               Foreground="#212529"/>
+                                    
+                                    <TextBlock Text="File will be moved to the Recycle Bin" 
+                                               FontSize="12"
+                                               Foreground="#6c757d"
+                                               TextWrapping="Wrap" />
+                                    
+                                </StackPanel>
+                                
+                            </RadioButton>
+                            
+                        </StackPanel>
+                        
+                    </Border>
+                    
+                </StackPanel>
+
+                <StackPanel Grid.Row="2"
+                            Grid.Column="0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,15,0,0">
+                    
+                    <Button Command="{Binding ApplyCommand}"
+                            Content="Apply"
+                            Height="32"
+                            MinWidth="80"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Bottom"
+                            FontSize="14"
+                            Background="#e9ecef"
+                            Foreground="#212529"
+                            BorderBrush="#ced4da"/>
+                    
+                </StackPanel>
+                
+            </Grid>
+            
+        </StackPanel>
+        
+    </Border>
+        
+</Window>
