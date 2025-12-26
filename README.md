@@ -1,4 +1,4 @@
-﻿CleanDownloads
+CleanDownloads
 ==========
 **CleanDownloads** is a background utility that automatically deletes a file from the Downloads folder immediately after it is used for the first time
 
@@ -44,4 +44,4 @@ Build and publish (single‑file and self‑contained):
 dotnet publish
 ```
 
-The published single‑file exe will be located in the `Clean Downloads\bin\Release\net9.0\win-x64\publish` folder
+The published single‑file exe will be located in the `Clean Downloads\bin\Release\net10.0\win-x64\publish` folder
