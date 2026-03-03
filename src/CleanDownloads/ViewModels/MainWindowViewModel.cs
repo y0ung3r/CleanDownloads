@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualBasic.FileIO;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -15,10 +14,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly CleaningSettings _currentSettings;
     
     [Reactive]
-    public partial bool IsDeletePermanently { get; set; }
+    public partial bool DeletePermanently { get; set; }
     
     [Reactive]
-    public partial bool IsSendToRecycleBin { get; set; }
+    public partial bool SendToRecycleBin { get; set; }
+    
+    [Reactive]
+    public partial bool DisableDeletion { get; set; }
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
     
@@ -35,8 +37,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _logger = logger;
         _currentSettings = currentSettings;
         
-        IsDeletePermanently = currentSettings.DeleteMode is RecycleOption.DeletePermanently;
-        IsSendToRecycleBin = currentSettings.DeleteMode is RecycleOption.SendToRecycleBin;
+        DeletePermanently = currentSettings.DeleteMode is RecycleMode.DeletePermanently;
+        SendToRecycleBin = currentSettings.DeleteMode is RecycleMode.SendToRecycleBin;
+        DisableDeletion = currentSettings.DeleteMode is RecycleMode.Disable;
         
         CloseCommand = ReactiveCommand.Create(() => { });
         ApplyCommand = ReactiveCommand.CreateFromTask(ApplyAsync);
@@ -46,8 +49,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         _currentSettings.DeleteMode = this switch
         {
-            _ when IsDeletePermanently => RecycleOption.DeletePermanently,
-            _ => RecycleOption.SendToRecycleBin
+            _ when DeletePermanently => RecycleMode.DeletePermanently,
+            _ when SendToRecycleBin => RecycleMode.SendToRecycleBin,
+            _ when DisableDeletion => RecycleMode.Disable
         };
 
         try

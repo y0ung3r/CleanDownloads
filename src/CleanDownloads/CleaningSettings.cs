@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic.FileIO;
 using Tomlyn;
 using TruePath;
 
@@ -46,8 +45,8 @@ public sealed class CleaningSettings
     private CleaningSettings(string settingsPath)
         => CurrentPath = settingsPath;
     
-    public RecycleOption DeleteMode { get; set; } 
-        = RecycleOption.SendToRecycleBin;
+    public RecycleMode DeleteMode { get; set; } 
+        = RecycleMode.SendToRecycleBin;
 
     public async Task SaveAsync()
     {

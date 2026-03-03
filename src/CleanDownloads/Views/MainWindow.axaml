@@ -107,7 +107,7 @@
                             
                             <RadioButton GroupName="DeleteMode"
                                          Margin="0,0,5,0"
-                                         IsChecked="{Binding IsDeletePermanently}"
+                                         IsChecked="{Binding DeletePermanently}"
                                          VerticalAlignment="Top"
                                          BorderThickness="1">
                             
@@ -144,7 +144,7 @@
                             
                             <RadioButton GroupName="DeleteMode"
                                          Margin="0,0,5,0"
-                                         IsChecked="{Binding IsSendToRecycleBin}"
+                                         IsChecked="{Binding SendToRecycleBin}"
                                          VerticalAlignment="Top"
                                          BorderThickness="1">
                             
@@ -156,6 +156,42 @@
                                                Foreground="#212529"/>
                                     
                                     <TextBlock Text="File will be moved to the Recycle Bin" 
+                                               FontSize="12"
+                                               Foreground="#6c757d"
+                                               TextWrapping="Wrap" />
+                                    
+                                </StackPanel>
+                                
+                            </RadioButton>
+                            
+                        </StackPanel>
+                        
+                    </Border>
+
+					<Border Background="#f8f9fa" 
+                            BorderBrush="#e9ecef" 
+                            BorderThickness="1" 
+                            CornerRadius="12" 
+                            Padding="12">
+                        
+                        <StackPanel Orientation="Horizontal" 
+                                    Spacing="10" 
+                                    VerticalAlignment="Center">
+                            
+                            <RadioButton GroupName="DeleteMode"
+                                         Margin="0,0,5,0"
+                                         IsChecked="{Binding DisableDeletion}"
+                                         VerticalAlignment="Top"
+                                         BorderThickness="1">
+                            
+                                <StackPanel Orientation="Vertical" Spacing="4">
+                                    
+                                    <TextBlock Text="Disable deletion" 
+                                               FontWeight="SemiBold" 
+                                               FontSize="14"
+                                               Foreground="#212529"/>
+                                    
+                                    <TextBlock Text="File will not be deleted" 
                                                FontSize="12"
                                                Foreground="#6c757d"
                                                TextWrapping="Wrap" />
