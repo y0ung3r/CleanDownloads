@@ -12,7 +12,8 @@ CleanDownloads
    - Registers an autostart entry for the current user via the `Windows Task Scheduler`
 3. In the window that opens, you can select the file deletion mode:
 
-   ![Configuration window](https://github.com/user-attachments/assets/09285fd2-c72a-4fbf-843c-f8847f052eea)
+   ![Configuration window](https://github.com/user-attachments/assets/7032bbbd-df85-4359-b735-55c9fffaa858)
+
 
 ### Notes
 - If you launch the application again while it is already running, the existing instance window (single instance) will open
