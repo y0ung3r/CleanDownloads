@@ -24,6 +24,8 @@ public sealed class FileRecycler(ILogger<FileRecycler> logger, ProcessMonitor pr
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                await Task.Delay(millisecondsDelay: 1000, stoppingToken);
+                
                 if (cleaningSettings.DeleteMode is RecycleMode.Disable)
                     continue;
 
